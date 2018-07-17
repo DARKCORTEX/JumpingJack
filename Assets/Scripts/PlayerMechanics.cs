@@ -27,6 +27,15 @@ public class PlayerMechanics : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
+	void Update() {
+		if(GameManager.instance.i_lives > 0 && !b_stunned && b_grounded)
+		{
+			if(Input.GetKeyDown(KeyCode.UpArrow))
+			{
+				Jump();
+			}
+		}
+	}
 	void FixedUpdate () {
 		Debug.DrawLine(gameObject.transform.position,new Vector2(gameObject.transform.position.x,gameObject.transform.position.y + 0.33f),Color.blue);
 		Debug.DrawLine(gameObject.transform.position,new Vector2(gameObject.transform.position.x,gameObject.transform.position.y - 0.32f),Color.blue);
@@ -41,11 +50,6 @@ public class PlayerMechanics : MonoBehaviour {
 				if(b_grounded)
 				{
 					Move();
-					if(Input.GetKeyDown(KeyCode.UpArrow))
-					{
-						Jump();
-					}
-					
 				}
 			}
 			
@@ -120,6 +124,7 @@ public class PlayerMechanics : MonoBehaviour {
 	{
 		b_stunned = true;
 		b_canstuntop = false;
+		c_rb.velocity = new Vector2(0,c_rb.velocity.y);
 		//animacion de stun
 
 		yield return new WaitForSeconds(f_stunDelay);
@@ -142,11 +147,16 @@ public class PlayerMechanics : MonoBehaviour {
 				Fall();
 				b_grounded = false;
 				b_falling = true;
-			}else if(!b_grounded && !gameObject.GetComponent<BoxCollider2D>().isTrigger)
+			}else if(!b_grounded && !gameObject.GetComponent<BoxCollider2D>().isTrigger && !b_stunned && b_canstuntop)
 			{
 				GameManager.instance.b_canSpanwHole = true;
 			}
 			gameObject.GetComponent<BoxCollider2D>().isTrigger = true;
+		}
+
+		if(col.gameObject.tag == "Enemy")
+		{
+			StartCoroutine(Stun());
 		}
 	}
 

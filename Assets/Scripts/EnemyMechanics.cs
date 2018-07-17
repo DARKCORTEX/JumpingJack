@@ -30,7 +30,13 @@ public class EnemyMechanics : MonoBehaviour {
 
 	public void Move()
 	{
-		 c_rb.velocity = new Vector2((direction == MoveDirection.Right?f_speed:-f_speed),0);
+		if(GameManager.instance.b_canMoveEnemy)
+		{
+			c_rb.velocity = new Vector2((direction == MoveDirection.Right?f_speed:-f_speed),0);
+		}else
+		{
+			c_rb.velocity = Vector2.zero;
+		}
 	}
 
 	public void Teleport()

@@ -10,6 +10,8 @@ public class HoleMechanics : MonoBehaviour {
 	public int i_groundLvl;
 	float f_limitX = 4.813f;
 	float f_posX = -5.803f;
+
+	public bool b_activated;
 	public enum MoveDirection
 	{
 		Left,
@@ -30,7 +32,13 @@ public class HoleMechanics : MonoBehaviour {
 
 	public void Move()
 	{
-		 c_rb.velocity = new Vector2((direction == MoveDirection.Right?f_speed:-f_speed),0);
+		if(GameManager.instance.b_canMoveHole)
+		{
+			c_rb.velocity = new Vector2((direction == MoveDirection.Right?f_speed:-f_speed),0);
+		}else
+		{
+			c_rb.velocity = Vector2.zero;
+		}
 	}	
 
 	public void Teleport()
@@ -45,7 +53,10 @@ public class HoleMechanics : MonoBehaviour {
 
 				g_holeClone.GetComponent<HoleMechanics>().i_groundLvl = i_groundLvl;
 				g_holeClone.GetComponent<HoleMechanics>().direction = direction;
+				g_holeClone.GetComponent<HoleMechanics>().b_activated = b_activated;
+
 				g_holeClone.transform.localPosition = new Vector3((direction == MoveDirection.Right ? f_posX : -f_posX),GameManager.instance.f_highforgroundlvl[i_groundLvl],g_holeClone.transform.localPosition.z);
+				
 				g_holeClone.SetActive(true);
 			}
 		}
@@ -53,6 +64,18 @@ public class HoleMechanics : MonoBehaviour {
 		if(direction == MoveDirection.Right ? gameObject.transform.position.x > (f_limitX+2): gameObject.transform.position.x < (-f_limitX-2))
 		{
 			gameObject.SetActive(false);
+		}
+	}
+
+	public void OnTriggerEnter2D(Collider2D col)
+	{
+		if(col.gameObject.tag == "Hole" && col.gameObject.GetComponent<HoleMechanics>().b_activated && !b_activated)
+		{			
+			GameManager.instance.b_canSpanwHole = true;
+			Debug.Log("no spawn");
+		}else
+		{
+			b_activated = true;
 		}
 	}
 }
