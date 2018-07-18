@@ -43,6 +43,7 @@ public class GameManager : MonoBehaviour {
 	public Text t_highscore;
 
 	public GameObject g_intro;
+    public bool b_lvlstart;
 	public static GameManager instance;
 	// Use this for initialization
 	void Awake() {
@@ -68,11 +69,15 @@ public class GameManager : MonoBehaviour {
 			if((Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetKeyDown(KeyCode.Return)) && i_lvl < 21)
 			{
 				ResetWorldNext();
-			}else
-			{
-				ResetWorldDead();
+
 			}
-		}
+
+            if (i_lvl >= 21)
+            {
+                ResetWorldDead();
+            }
+
+        }
 
 		if(g_intro.activeInHierarchy)
 		{
@@ -83,7 +88,7 @@ public class GameManager : MonoBehaviour {
 				b_canMoveEnemy = true;
 				b_canMovePlayer = true;
 				b_canNextHazard = true;
-				i_lives = 7;
+				i_lives = 6;
 				i_lvl = 0;
 				i_holeNumber = 2;
 			}
@@ -141,11 +146,11 @@ public class GameManager : MonoBehaviour {
 			b_canMoveEnemy = false;
 			b_canMovePlayer = false;
 
-			
-			i_lvl++;
-			
 
-			g_nextHazard.SetActive(true);
+            i_lvl++;
+            b_lvlstart = true;
+
+            g_nextHazard.SetActive(true);
 			t_nextHazardCounter.text = "NEXT LEVEL - "+i_lvl+" HAZARD";
 			t_storyText.text = s_storyComplete[i_lvl];
 
@@ -172,7 +177,8 @@ public class GameManager : MonoBehaviour {
 		if(i_lives == 0)
 		{
 			g_deadScreen.SetActive(true);
-			if(i_score > i_highscore)
+            t_finalScoreAndLvlText.text = "FINAL SCORE " + i_score + "\n WITH " + i_lvl + " HAZARDS";
+            if (i_score > i_highscore)
 			{
 				i_highscore = i_score;
 				t_highscore.text = "HI"+i_highscore;
@@ -187,12 +193,14 @@ public class GameManager : MonoBehaviour {
 
 	public void ResetWorldDead()
 	{
-		i_lives = 7;
+		i_lives = 6;
 		i_lvl = 0;
 		i_score = 0;
 		t_score.text = "SC0";
+       
+        b_lvlstart = true;
 
-		g_player.GetComponent<PlayerMechanics>().b_stunned = false;
+        g_player.GetComponent<PlayerMechanics>().b_stunned = false;
 		g_player.GetComponent<PlayerMechanics>().b_falling = false;
 		g_player.transform.position = new Vector2(0,-3.535f);
 		g_player.GetComponent<BoxCollider2D>().isTrigger = false;
@@ -218,9 +226,10 @@ public class GameManager : MonoBehaviour {
 	public void ResetWorldNext()
 	{
 		ResetHoles();
-		i_lives++;
-		i_lvl++; 
-		g_player.GetComponent<PlayerMechanics>().b_falling = false;
+		
+		
+        b_lvlstart = true;
+        g_player.GetComponent<PlayerMechanics>().b_falling = false;
 		g_player.GetComponent<Animator>().ResetTrigger("Fall");
 		g_player.GetComponent<PlayerMechanics>().b_stunned = false;
 		g_player.transform.position = new Vector2(0,-3.535f);
@@ -260,6 +269,7 @@ public class GameManager : MonoBehaviour {
 	{
 		foreach(GameObject go in l_enemyList)
 		{
+            go.GetComponent<EnemyMechanics>().g_enemyClone.SetActive(false);
 			go.SetActive(false);
 		}
 	}
@@ -267,8 +277,8 @@ public class GameManager : MonoBehaviour {
 	public void ScoreUp()
 	{
 		i_score += (i_lvl+1)*5;
-		t_score.text = "SC"+i_score; 
-		t_finalScoreAndLvlText.text = "FINAL SCORE "+ i_score + "\n WITH "+i_lvl+" HAZARDS";
+		t_score.text = "SC"+i_score;
+        
 
-	}
+    }
 }

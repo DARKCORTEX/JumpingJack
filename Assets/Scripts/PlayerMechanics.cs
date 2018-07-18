@@ -37,8 +37,6 @@ public class PlayerMechanics : MonoBehaviour {
 		}
 	}
 	void FixedUpdate () {
-		Debug.DrawLine(gameObject.transform.position,new Vector2(gameObject.transform.position.x,gameObject.transform.position.y + 0.33f),Color.blue);
-		Debug.DrawLine(gameObject.transform.position,new Vector2(gameObject.transform.position.x,gameObject.transform.position.y - 0.32f),Color.blue);
 		if(GameManager.instance.i_lives > 0 && GameManager.instance.b_canMovePlayer)
 		{
 			if(!GetComponent<BoxCollider2D>().isTrigger)
@@ -211,8 +209,15 @@ public class PlayerMechanics : MonoBehaviour {
 	{
 		if(col.gameObject.name == "Ground0")
 		{
-			GameManager.instance.i_lives--;
-			GameManager.instance.UpdateLives();
+            if (!GameManager.instance.b_lvlstart)
+            {
+                GameManager.instance.i_lives--;
+                GameManager.instance.UpdateLives();
+            }
+            else
+            {
+                GameManager.instance.b_lvlstart = false;
+            }
 		}
 	}
 

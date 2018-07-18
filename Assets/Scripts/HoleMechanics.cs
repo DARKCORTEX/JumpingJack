@@ -72,7 +72,6 @@ public class HoleMechanics : MonoBehaviour {
 		if(col.gameObject.tag == "Hole" && col.gameObject.GetComponent<HoleMechanics>().b_activated && !b_activated)
 		{			
 			GameManager.instance.b_canSpanwHole = true;
-			Debug.Log("no spawn");
 		}else
 		{
 			b_activated = true;
