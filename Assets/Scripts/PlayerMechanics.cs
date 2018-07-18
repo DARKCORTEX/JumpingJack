@@ -28,7 +28,7 @@ public class PlayerMechanics : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update() {
-		if(GameManager.instance.i_lives > 0 && !b_stunned && b_grounded)
+		if(GameManager.instance.i_lives > 0 && !b_stunned && b_grounded && GameManager.instance.b_canMovePlayer)
 		{
 			if(Input.GetKeyDown(KeyCode.UpArrow))
 			{
@@ -39,7 +39,7 @@ public class PlayerMechanics : MonoBehaviour {
 	void FixedUpdate () {
 		Debug.DrawLine(gameObject.transform.position,new Vector2(gameObject.transform.position.x,gameObject.transform.position.y + 0.33f),Color.blue);
 		Debug.DrawLine(gameObject.transform.position,new Vector2(gameObject.transform.position.x,gameObject.transform.position.y - 0.32f),Color.blue);
-		if(GameManager.instance.i_lives > 0)
+		if(GameManager.instance.i_lives > 0 && GameManager.instance.b_canMovePlayer)
 		{
 			if(!GetComponent<BoxCollider2D>().isTrigger)
 			{
@@ -71,12 +71,32 @@ public class PlayerMechanics : MonoBehaviour {
 	{
 		f_h = Input.GetAxis("Horizontal");
 		c_rb.velocity = new Vector2(f_h * f_speed,c_rb.velocity.y);
+		if(f_h > 0)
+		{
+			GetComponent<SpriteRenderer>().flipX = true;
+		}else
+		{
+			GetComponent<SpriteRenderer>().flipX = false;
+		}
+
+		if(f_h != 0)
+		{
+			GetComponent<Animator>().ResetTrigger("Idle");
+			GetComponent<Animator>().SetTrigger("Move");
+		}else
+		{
+			
+			GetComponent<Animator>().ResetTrigger("Move");
+			GetComponent<Animator>().SetTrigger("Idle");
+		}
 	}
 
 	public void Jump()
 	{
 		b_canstuntop = true;
 		c_rb.velocity = new Vector2(0,f_jumpforce);
+
+		GetComponent<Animator>().SetTrigger("Jump");
 		SlowMotionOn();
 	}
 
@@ -93,6 +113,7 @@ public class PlayerMechanics : MonoBehaviour {
 		r_hitDown = Physics2D.Raycast(gameObject.transform.position,Vector2.down);
 		if(r_hitDown.collider != null)
 		{
+						
 			if(r_hitDown.distance <= 0.35f && r_hitDown.collider.gameObject.tag == "Ground")
 			{
 				b_grounded = true;
@@ -122,13 +143,20 @@ public class PlayerMechanics : MonoBehaviour {
 
 	IEnumerator Stun()
 	{
+
+		
 		b_stunned = true;
 		b_canstuntop = false;
 		c_rb.velocity = new Vector2(0,c_rb.velocity.y);
-		//animacion de stun
+		GetComponent<Animator>().ResetTrigger("Jump");
+		GetComponent<Animator>().ResetTrigger("Move");
+		GetComponent<Animator>().ResetTrigger("Fall");
+		GetComponent<Animator>().SetTrigger("Stun");
 
 		yield return new WaitForSeconds(f_stunDelay);
+		GetComponent<Animator>().SetTrigger("Idle");
 		b_stunned = false;
+		
 		
 	}
 
@@ -142,22 +170,32 @@ public class PlayerMechanics : MonoBehaviour {
 		if(col.gameObject.tag == "Hole")
 		{
 			
-			if(b_grounded)
+			if(b_grounded || c_rb.velocity.y < 0)
 			{
 				Fall();
 				b_grounded = false;
 				b_falling = true;
+				GetComponent<Animator>().SetTrigger("Fall");
 			}else if(!b_grounded && !gameObject.GetComponent<BoxCollider2D>().isTrigger && !b_stunned && b_canstuntop)
 			{
 				GameManager.instance.b_canSpanwHole = true;
+				GameManager.instance.ScoreUp();
 			}
 			gameObject.GetComponent<BoxCollider2D>().isTrigger = true;
+
+			if(col.gameObject.GetComponent<HoleMechanics>().i_groundLvl == 7)
+			{
+				GameManager.instance.NextHazard();
+				transform.position = new Vector2(0,-3.535f);
+				GetComponent<BoxCollider2D>().isTrigger = false;
+			}
 		}
 
 		if(col.gameObject.tag == "Enemy")
 		{
 			StartCoroutine(Stun());
 		}
+
 	}
 
 	public void OnTriggerExit2D(Collider2D col)
@@ -169,9 +207,18 @@ public class PlayerMechanics : MonoBehaviour {
 		}
 	}
 
+	public void OnCollisionEnter2D(Collision2D col)
+	{
+		if(col.gameObject.name == "Ground0")
+		{
+			GameManager.instance.i_lives--;
+			GameManager.instance.UpdateLives();
+		}
+	}
+
 	public void SlowMotionOn()
 	{
-		Time.timeScale = 0.65f;
+		Time.timeScale = 0.55f;
 	}
 
 	public void SlowMotionOff()
