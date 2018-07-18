@@ -219,14 +219,17 @@ public class GameManager : MonoBehaviour {
 	{
 		ResetHoles();
 		i_lives++;
+		i_lvl++; 
 		g_player.GetComponent<PlayerMechanics>().b_falling = false;
 		g_player.GetComponent<Animator>().ResetTrigger("Fall");
 		g_player.GetComponent<PlayerMechanics>().b_stunned = false;
 		g_player.transform.position = new Vector2(0,-3.535f);
 		g_player.GetComponent<BoxCollider2D>().isTrigger = false;
 
-		l_enemyList[i_lvl-1].SetActive(true);
-		
+		if(i_lvl != 0)
+		{
+			l_enemyList[i_lvl-1].SetActive(true);
+		}
 		b_canMoveHole = true;
 		b_canMoveEnemy = true;
 		b_canMovePlayer = true;
